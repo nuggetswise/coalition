@@ -71,15 +71,30 @@ if broker_questions and broker_answers:
             confidence = result.get('confidence', '')
             broker_summary = result.get('broker_summary', '')
             explanation = result.get('explanation', '')
-        st.session_state['last_result'] = result
-elif 'last_result' in st.session_state:
-    result = st.session_state['last_result']
-    suggestions = result.get('risk_mitigation', [])
-    remediation = result.get('remediation', '')
-    recommendation = result.get('recommendation', '')
-    confidence = result.get('confidence', '')
-    broker_summary = result.get('broker_summary', '')
-    explanation = result.get('explanation', '')
+            # Always update session state with the latest result
+            st.session_state['last_result'] = result
+    elif 'last_result' in st.session_state:
+        # Only show results if they match the current selections
+        result = st.session_state['last_result']
+        if (
+            result.get('checklist') == selected_checklist and
+            result.get('broker_questions') == broker_questions and
+            result.get('broker_answers') == broker_answers
+        ):
+            suggestions = result.get('risk_mitigation', [])
+            remediation = result.get('remediation', '')
+            recommendation = result.get('recommendation', '')
+            confidence = result.get('confidence', '')
+            broker_summary = result.get('broker_summary', '')
+            explanation = result.get('explanation', '')
+        else:
+            # Clear results if selections have changed
+            suggestions = []
+            remediation = ''
+            recommendation = ''
+            confidence = ''
+            broker_summary = ''
+            explanation = ''
 
 if suggestions:
     st.markdown("### 🛡️ Risk Mitigation Suggestions (AI-generated)")
