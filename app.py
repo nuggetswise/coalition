@@ -21,6 +21,11 @@ st.markdown(
 )
 user_incident = st.text_area("Incident Description", height=100)
 
+if st.button("Analyze with AI") and user_incident.strip():
+    with st.spinner("AI is analyzing the incident and generating all outputs..."):
+        result = llm_parse_incident_and_generate_all(user_incident)
+        st.session_state['llm_result'] = result
+
 # --- Underwriting Checklist (AI-generated) ---
 if 'llm_result' not in st.session_state or st.session_state.get('last_incident_text') != user_incident:
     st.session_state['llm_result'] = llm_parse_incident_and_generate_all(user_incident) if user_incident.strip() else None
@@ -45,7 +50,7 @@ if selected_checklist:
         broker_questions = llm_generate_broker_questions_from_checklist(user_incident, selected_checklist)
     st.markdown("### 🤝 Broker Questions (AI-generated)")
     for i, q in enumerate(broker_questions):
-        ans = st.radio(q, ['Yes', 'No'], index=0, key=f'broker_q_{i}')
+        ans = st.radio(str(q), ['Yes', 'No'], index=0, key=f'broker_q_{i}')
         broker_answers.append(ans)
 
 # --- Risk Mitigation Suggestions & Remediation Steps (dynamic based on broker answers) ---
