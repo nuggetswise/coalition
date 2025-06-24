@@ -102,3 +102,45 @@ def generate_broker_summary(remediation, incident):
     risk = incident['risk_level']
     summary = f"{title} ({risk} risk): {remediation.split('.')[0]}. Issue addressed to reduce exposure."
     return summary
+
+def generate_underwriting_checklist(incident):
+    """
+    Returns a list of checklist items for underwriting, AI pre-filled.
+    """
+    title = incident['title']
+    description = incident['description']
+    checklist = [
+        f"Confirm asset inventory for: {title}",
+        f"Verify patch status for affected systems",
+        f"Check MFA enforcement for all admin accounts",
+        f"Review backup and recovery procedures",
+        f"Assess network segmentation and firewall rules",
+        f"Validate incident response plan is up to date"
+    ]
+    return checklist
+
+def generate_broker_questions(incident):
+    """
+    Returns a list of GPT-generated questions for brokers.
+    """
+    title = incident['title']
+    questions = [
+        f"Can you confirm if MFA is enabled for all users related to '{title}'?",
+        f"Are there any compensating controls in place for this risk?",
+        f"Has this incident type occurred before? If so, how was it remediated?",
+        f"Are there any business constraints preventing immediate remediation?"
+    ]
+    return questions
+
+def generate_risk_mitigation_suggestions(incident):
+    """
+    Returns a list of risk mitigation suggestions.
+    """
+    title = incident['title']
+    suggestions = [
+        f"Recommend upgrading all related services to the latest supported version.",
+        f"Implement network monitoring for suspicious activity.",
+        f"Enforce least privilege access for all accounts.",
+        f"Upgrade TLS to 1.3 where possible."
+    ]
+    return suggestions
