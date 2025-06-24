@@ -249,3 +249,65 @@ def llm_parse_incident_and_generate_all(incident_text):
         'broker_summary': "Incident triaged, remediation in progress.",
         'explanation': "Recommendation is based on risk and missing controls."
     }
+
+def llm_generate_broker_questions_from_checklist(incident_text, checklist_items):
+    openai_key = os.getenv('OPENAI_API_KEY')
+    prompt = (
+        f"Incident: {incident_text}\n"
+        f"Selected Underwriting Checklist: {checklist_items}\n"
+        "Generate a list of yes/no broker questions that clarify the status of the selected controls. Respond as a JSON list."
+    )
+    if openai and openai_key:
+        openai.api_key = openai_key
+        resp = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=[{"role": "user", "content": prompt}]
+        )
+        import json as pyjson
+        try:
+            questions = pyjson.loads(resp.choices[0].message.content.strip().replace("'", '"'))
+        except Exception:
+            questions = []
+        return questions
+    # fallback
+    return ["Is MFA enabled?", "Are all systems patched?"]
+
+def llm_generate_suggestions_and_remediation(incident_text, checklist_items, broker_questions, broker_answers):
+    openai_key = os.getenv('OPENAI_API_KEY')
+    prompt = (
+        f"Incident: {incident_text}\n"
+        f"Selected Underwriting Checklist: {checklist_items}\n"
+        f"Broker Questions: {broker_questions}\n"
+        f"Broker Answers: {broker_answers}\n"
+        "Based on the above, generate the following as JSON:\n"
+        "{\n"
+        "  'risk_mitigation': [list of risk mitigation suggestions],\n"
+        "  'remediation': 'remediation steps',\n"
+        "  'recommendation': 'underwriter recommendation',\n"
+        "  'confidence': confidence_score (0-1),\n"
+        "  'broker_summary': '2-line broker summary',\n"
+        "  'explanation': 'explain how the recommendation was derived'\n"
+        "}\n"
+        "Respond with only the JSON."
+    )
+    if openai and openai_key:
+        openai.api_key = openai_key
+        resp = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=[{"role": "user", "content": prompt}]
+        )
+        import json as pyjson
+        try:
+            data = pyjson.loads(resp.choices[0].message.content.strip().replace("'", '"'))
+        except Exception:
+            data = {}
+        return data
+    # fallback
+    return {
+        'risk_mitigation': ["Upgrade all services", "Implement monitoring"],
+        'remediation': "Disable public access and enforce MFA.",
+        'recommendation': "Request fix",
+        'confidence': 0.8,
+        'broker_summary': "Incident triaged, remediation in progress.",
+        'explanation': "Recommendation is based on risk and missing controls."
+    }

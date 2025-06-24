@@ -3,16 +3,15 @@
 A Streamlit-based demo app simulating an AI assistant for cybersecurity incident remediation and full underwriting pipeline coverage, inspired by Coalition’s Security Copilot.
 
 ## Features
-- **Incident Selector:** Choose from sample cybersecurity incidents.
-- **AI Remediation Suggestions:** Uses OpenAI, Groq, Gemini, or Cohere (if API key set) to suggest technical and plain-language remediation steps, with explanations. No stub fallback—an API key is required.
-- **Editable Underwriting Checklist:** AI pre-fills a checklist for underwriters to review and mark as complete.
-- **GPT-Generated Broker Questions:** AI suggests clarifying questions for brokers to answer.
-- **Risk Mitigation Suggestions:** AI recommends additional risk reduction steps.
-- **Before/After Triage Comparison:** Visualizes time and quality difference between AI and manual triage.
-- **Confidence Score + Human Override:** Shows AI confidence and allows underwriter to override the recommendation.
-- **Broker Summary Generator:** Condenses remediation into a 2-line summary for brokers, with copy-to-clipboard.
-- **Explainability:** Shows reasoning behind suggestions and recommendations.
-- **Net Risk Visualization:** See risk reduction after remediation and recommendation.
+- **Free-text Incident Input:** Enter any incident scenario; the AI parses and drives the workflow.
+- **AI-Generated Underwriting Checklist:** LLM suggests checklist items based on the incident.
+- **Interactive Checklist Selection:** User selects relevant controls; AI uses these for downstream logic.
+- **Dynamic Broker Questions:** LLM generates Yes/No questions tailored to selected checklist items.
+- **Risk Mitigation & Remediation:** LLM generates context-aware suggestions and remediation steps based on broker answers.
+- **AI Underwriter Recommendation:** LLM provides a recommendation (Accept, Request Fix, Decline) and confidence score.
+- **Broker Summary:** LLM condenses the scenario and actions into a 2-line note for brokers.
+- **Explainability:** Detailed section explains how the recommendation was derived.
+- **Demo Footnote:** App is for the Senior Product Manager, Underwriting AI application at Coalition Inc.
 
 ## How to Use
 1. **Install dependencies:**
@@ -23,9 +22,6 @@ A Streamlit-based demo app simulating an AI assistant for cybersecurity incident
    - For local use, create `.streamlit/secrets.toml` (not committed to git):
      ```toml
      OPENAI_API_KEY = "sk-..."
-     GROQ_API_KEY = "gsk-..."
-     GEMINI_API_KEY = "..."
-     COHERE_API_KEY = "..."
      ```
    - For Streamlit Community Cloud, set secrets in the app’s “Settings” → “Secrets” UI.
 3. **Run the app:**
@@ -33,14 +29,17 @@ A Streamlit-based demo app simulating an AI assistant for cybersecurity incident
    streamlit run app.py
    ```
 4. **Workflow:**
-   - Select an incident from the dropdown.
-   - Review and edit the AI-generated underwriting checklist.
-   - Answer AI-generated broker questions.
-   - Review risk mitigation suggestions.
-   - Click “Generate Remediation & Recommendation” for AI-powered remediation, explanation, and recommendation.
-   - Optionally override the AI recommendation as a human underwriter.
-   - Compare AI vs. manual triage time/quality.
-   - See net risk after remediation and a broker summary note.
+   - Enter a free-text incident description (see gray examples in the app).
+   - Review and select relevant underwriting checklist items.
+   - Answer AI-generated Yes/No broker questions.
+   - Click “Generate Remediation & Recommendation” to get AI-driven risk mitigation, remediation, and recommendations.
+   - Review the detailed explanation and broker summary.
+
+## Example Prompts
+- "A public S3 bucket with sensitive configs was found by our cloud scanner on June 10, 2025."
+- "Multiple admin accounts were found using weak passwords and no MFA on June 12, 2025."
+- "An unpatched Apache server (2.4.29) with critical CVEs was detected by a vulnerability scan."
+- "A phishing email impersonating IT support was reported by several users last week."
 
 ## Use Cases
 - **Underwriter Triage:** Rapidly assess and document incident risk, remediation, and underwriting actions with AI assistance.
@@ -48,6 +47,15 @@ A Streamlit-based demo app simulating an AI assistant for cybersecurity incident
 - **Risk Mitigation Planning:** Get actionable, AI-driven suggestions to reduce cyber risk exposure.
 - **Audit & Explainability:** Provide transparent, explainable recommendations and allow human override for compliance.
 - **Demo for Cyber Insurance:** Showcase how AI can accelerate and improve the underwriting pipeline for cyber insurance products.
+
+## How the AI Pipeline Works
+1. **Incident Parsing:** The LLM parses the free-text incident and generates a tailored underwriting checklist.
+2. **Checklist Selection:** User selects controls relevant to the scenario.
+3. **Broker Questions:** LLM generates Yes/No questions based on selected checklist items.
+4. **Broker Answers:** User answers each question; these responses are used as context for the next step.
+5. **Risk Mitigation & Remediation:** LLM generates context-aware suggestions and remediation steps based on the incident, checklist, and broker answers.
+6. **Recommendation & Confidence:** LLM provides an underwriting recommendation and confidence score, with a detailed explanation of its reasoning.
+7. **Broker Summary:** LLM condenses the scenario and actions into a concise note for brokers.
 
 ## Deployment
 - Ready for [Streamlit Community Cloud](https://streamlit.io/cloud). Do not commit real secrets—set them in the Cloud UI.
