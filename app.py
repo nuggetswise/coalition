@@ -60,41 +60,35 @@ recommendation = ''
 confidence = ''
 broker_summary = ''
 explanation = ''
+
+# Always show results immediately after button click, using latest values
 if broker_questions and broker_answers:
     if st.button("Generate Remediation & Recommendation"):
         with st.spinner("AI is generating risk mitigation, remediation, and recommendations based on your answers..."):
             from utils import llm_generate_suggestions_and_remediation
             result = llm_generate_suggestions_and_remediation(user_incident, selected_checklist, broker_questions, broker_answers)
+            # Store all relevant context in session state
+            st.session_state['last_result'] = {
+                'result': result,
+                'checklist': selected_checklist.copy(),
+                'broker_questions': broker_questions.copy(),
+                'broker_answers': broker_answers.copy()
+            }
             suggestions = result.get('risk_mitigation', [])
             remediation = result.get('remediation', '')
             recommendation = result.get('recommendation', '')
             confidence = result.get('confidence', '')
             broker_summary = result.get('broker_summary', '')
             explanation = result.get('explanation', '')
-            # Always update session state with the latest result
-            st.session_state['last_result'] = result
     elif 'last_result' in st.session_state:
-        # Only show results if they match the current selections
-        result = st.session_state['last_result']
-        if (
-            result.get('checklist') == selected_checklist and
-            result.get('broker_questions') == broker_questions and
-            result.get('broker_answers') == broker_answers
-        ):
-            suggestions = result.get('risk_mitigation', [])
-            remediation = result.get('remediation', '')
-            recommendation = result.get('recommendation', '')
-            confidence = result.get('confidence', '')
-            broker_summary = result.get('broker_summary', '')
-            explanation = result.get('explanation', '')
-        else:
-            # Clear results if selections have changed
-            suggestions = []
-            remediation = ''
-            recommendation = ''
-            confidence = ''
-            broker_summary = ''
-            explanation = ''
+        # Always show the last result, regardless of changes
+        last = st.session_state['last_result']
+        suggestions = last['result'].get('risk_mitigation', [])
+        remediation = last['result'].get('remediation', '')
+        recommendation = last['result'].get('recommendation', '')
+        confidence = last['result'].get('confidence', '')
+        broker_summary = last['result'].get('broker_summary', '')
+        explanation = last['result'].get('explanation', '')
 
 if suggestions:
     st.markdown("### 🛡️ Risk Mitigation Suggestions (AI-generated)")
@@ -121,5 +115,6 @@ if explanation:
         - The risk mitigation suggestions and remediation steps are tailored to the specific scenario and broker responses, ensuring actionable and relevant guidance for both underwriters and brokers.
         """)
 
+# --- Footnote ---
 st.markdown('<hr style="margin-top:2em;">', unsafe_allow_html=True)
-st.caption("This app is for the application of Senior Product Manager, Underwriting AI at Coalition Inc. Only for demo/job application use.")
+st.markdown('<span style="color:red;">This app is for the application of Senior Product Manager, Underwriting AI at Coalition Inc. Only for demo/job application use.</span>', unsafe_allow_html=True)
