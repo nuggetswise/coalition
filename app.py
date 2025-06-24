@@ -57,7 +57,7 @@ st.progress(max(1, net_risk) / 100, text=f"Net risk: {net_risk}/100 after remedi
 # Card: Broker summary
 st.markdown("### 📋 Broker Summary")
 broker_summary = generate_broker_summary(remediation_obj.get('remediation_steps', ''), incident)
-st.text_area("2-line Broker Note", broker_summary, height=60)
+st.text_area("2-line Broker Note", broker_summary, height=68)
 
 # Explain recommendation logic
 with st.expander("How was this recommendation derived?"):
