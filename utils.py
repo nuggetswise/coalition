@@ -255,7 +255,7 @@ def llm_generate_broker_questions_from_checklist(incident_text, checklist_items)
     prompt = (
         f"Incident: {incident_text}\n"
         f"Selected Underwriting Checklist: {checklist_items}\n"
-        "Generate a list of yes/no broker questions that clarify the status of the selected controls. Respond as a JSON list."
+        "Generate a list of 2-5 clear, specific yes/no broker questions that clarify the status of the selected controls. Respond as a JSON list of strings."
     )
     if openai and openai_key:
         openai.api_key = openai_key
@@ -265,10 +265,17 @@ def llm_generate_broker_questions_from_checklist(incident_text, checklist_items)
         )
         import json as pyjson
         try:
-            questions = pyjson.loads(resp.choices[0].message.content.strip().replace("'", '"'))
+            # Try to extract a JSON list from the LLM response
+            content = resp.choices[0].message.content.strip()
+            # Remove code block markers if present
+            if content.startswith('```'):
+                content = content.split('\n', 1)[-1].rsplit('```', 1)[0].strip()
+            questions = pyjson.loads(content.replace("'", '"'))
+            # Ensure it's a list of strings
+            if isinstance(questions, list) and all(isinstance(q, str) for q in questions):
+                return questions
         except Exception:
-            questions = []
-        return questions
+            pass
     # fallback
     return ["Is MFA enabled?", "Are all systems patched?"]
 
