@@ -1,0 +1,74 @@
+[
+    {
+      "id": "1",
+      "title": "RDP Port 3389 Exposed",
+      "description": "Remote Desktop Protocol is open to the internet, exposing the system to brute force attacks.",
+      "risk_level": "High",
+      "risk_contribution_score": 30,
+      "remediation_cost": 500,
+      "recommended_action": "",
+      "confidence_score": 0.0
+    },
+    {
+      "id": "2",
+      "title": "Outdated Apache Version",
+      "description": "Apache 2.4.29 is running, which contains multiple critical CVEs (e.g., CVE-2021-41773).",
+      "risk_level": "Medium",
+      "risk_contribution_score": 18,
+      "remediation_cost": 300,
+      "recommended_action": "",
+      "confidence_score": 0.0
+    },
+    {
+      "id": "3",
+      "title": "Public S3 Bucket",
+      "description": "An Amazon S3 bucket containing sensitive configuration files is publicly accessible.",
+      "risk_level": "High",
+      "risk_contribution_score": 25,
+      "remediation_cost": 200,
+      "recommended_action": "",
+      "confidence_score": 0.0
+    },
+    {
+      "id": "4",
+      "title": "Unpatched Windows 10",
+      "description": "Windows 10 machines are missing the latest security patches from the last 3 months.",
+      "risk_level": "Medium"
+    },
+    {
+      "id": "5",
+      "title": "Weak Admin Passwords",
+      "description": "Administrator accounts have weak passwords detected through credential stuffing attempts.",
+      "risk_level": "High"
+    },
+    {
+      "id": "6",
+      "title": "Open MongoDB Instance",
+      "description": "A MongoDB database is running without authentication and is accessible from the internet.",
+      "risk_level": "Critical"
+    },
+    {
+      "id": "7",
+      "title": "Phishing Email Detected",
+      "description": "Multiple users received a phishing email impersonating IT support to steal credentials.",
+      "risk_level": "Medium"
+    },
+    {
+      "id": "8",
+      "title": "Exposed Jenkins Dashboard",
+      "description": "The Jenkins CI/CD dashboard is accessible without authentication.",
+      "risk_level": "High"
+    },
+    {
+      "id": "9",
+      "title": "Outdated WordPress Plugins",
+      "description": "Several WordPress plugins in use have known vulnerabilities and have not been updated.",
+      "risk_level": "Medium"
+    },
+    {
+      "id": "10",
+      "title": "Lack of MFA on Admin Accounts",
+      "description": "High-privilege admin accounts do not enforce Multi-Factor Authentication (MFA).",
+      "risk_level": "High"
+    }
+  ]
