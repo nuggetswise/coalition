@@ -7,7 +7,11 @@
       "risk_contribution_score": 30,
       "remediation_cost": 500,
       "recommended_action": "",
-      "confidence_score": 0.0
+      "confidence_score": 0.0,
+      "asset_type": "Server",
+      "business_impact": "Potential lateral movement and ransomware risk.",
+      "detected_by": "External scan",
+      "date_detected": "2025-06-10"
     },
     {
       "id": "2",
@@ -17,7 +21,11 @@
       "risk_contribution_score": 18,
       "remediation_cost": 300,
       "recommended_action": "",
-      "confidence_score": 0.0
+      "confidence_score": 0.0,
+      "asset_type": "Web Server",
+      "business_impact": "Website defacement or data breach.",
+      "detected_by": "Vulnerability scan",
+      "date_detected": "2025-05-28"
     },
     {
       "id": "3",
@@ -27,48 +35,108 @@
       "risk_contribution_score": 25,
       "remediation_cost": 200,
       "recommended_action": "",
-      "confidence_score": 0.0
+      "confidence_score": 0.0,
+      "asset_type": "Cloud Storage",
+      "business_impact": "Leak of credentials or internal configs.",
+      "detected_by": "Cloud security tool",
+      "date_detected": "2025-06-01"
     },
     {
       "id": "4",
       "title": "Unpatched Windows 10",
       "description": "Windows 10 machines are missing the latest security patches from the last 3 months.",
-      "risk_level": "Medium"
+      "risk_level": "Medium",
+      "risk_contribution_score": 15,
+      "remediation_cost": 350,
+      "recommended_action": "",
+      "confidence_score": 0.0,
+      "asset_type": "Endpoint",
+      "business_impact": "Malware infection or privilege escalation.",
+      "detected_by": "Patch management",
+      "date_detected": "2025-05-15"
     },
     {
       "id": "5",
       "title": "Weak Admin Passwords",
       "description": "Administrator accounts have weak passwords detected through credential stuffing attempts.",
-      "risk_level": "High"
+      "risk_level": "High",
+      "risk_contribution_score": 22,
+      "remediation_cost": 150,
+      "recommended_action": "",
+      "confidence_score": 0.0,
+      "asset_type": "Identity",
+      "business_impact": "Account takeover and privilege abuse.",
+      "detected_by": "SIEM alert",
+      "date_detected": "2025-06-12"
     },
     {
       "id": "6",
       "title": "Open MongoDB Instance",
       "description": "A MongoDB database is running without authentication and is accessible from the internet.",
-      "risk_level": "Critical"
+      "risk_level": "Critical",
+      "risk_contribution_score": 40,
+      "remediation_cost": 600,
+      "recommended_action": "",
+      "confidence_score": 0.0,
+      "asset_type": "Database",
+      "business_impact": "Full data exfiltration or ransomware.",
+      "detected_by": "External scan",
+      "date_detected": "2025-06-13"
     },
     {
       "id": "7",
       "title": "Phishing Email Detected",
       "description": "Multiple users received a phishing email impersonating IT support to steal credentials.",
-      "risk_level": "Medium"
+      "risk_level": "Medium",
+      "risk_contribution_score": 12,
+      "remediation_cost": 100,
+      "recommended_action": "",
+      "confidence_score": 0.0,
+      "asset_type": "Email",
+      "business_impact": "Credential theft and lateral movement.",
+      "detected_by": "User report",
+      "date_detected": "2025-06-14"
     },
     {
       "id": "8",
       "title": "Exposed Jenkins Dashboard",
       "description": "The Jenkins CI/CD dashboard is accessible without authentication.",
-      "risk_level": "High"
+      "risk_level": "High",
+      "risk_contribution_score": 20,
+      "remediation_cost": 250,
+      "recommended_action": "",
+      "confidence_score": 0.0,
+      "asset_type": "DevOps",
+      "business_impact": "Pipeline compromise or code tampering.",
+      "detected_by": "External scan",
+      "date_detected": "2025-06-11"
     },
     {
       "id": "9",
       "title": "Outdated WordPress Plugins",
       "description": "Several WordPress plugins in use have known vulnerabilities and have not been updated.",
-      "risk_level": "Medium"
+      "risk_level": "Medium",
+      "risk_contribution_score": 10,
+      "remediation_cost": 120,
+      "recommended_action": "",
+      "confidence_score": 0.0,
+      "asset_type": "Web Application",
+      "business_impact": "Website defacement or malware distribution.",
+      "detected_by": "Vulnerability scan",
+      "date_detected": "2025-05-30"
     },
     {
       "id": "10",
       "title": "Lack of MFA on Admin Accounts",
       "description": "High-privilege admin accounts do not enforce Multi-Factor Authentication (MFA).",
-      "risk_level": "High"
+      "risk_level": "High",
+      "risk_contribution_score": 28,
+      "remediation_cost": 180,
+      "recommended_action": "",
+      "confidence_score": 0.0,
+      "asset_type": "Identity",
+      "business_impact": "Account compromise and privilege escalation.",
+      "detected_by": "IAM review",
+      "date_detected": "2025-06-09"
     }
   ]

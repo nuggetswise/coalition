@@ -1,101 +1,56 @@
 import streamlit as st
 import json
 from utils import (
-    generate_remediation, generate_broker_summary,
-    generate_underwriting_checklist, generate_broker_questions, generate_risk_mitigation_suggestions
+    llm_parse_incident_and_generate_all
 )
-
-# Load incidents from JSON
-def load_incidents(path='data/sample_incidents.json'):
-    with open(path, 'r') as f:
-        return json.load(f)
 
 st.set_page_config(page_title="Remediation Copilot", layout="wide")
 st.title("Remediation Copilot for Coalition Inc.")
 
-# Load incidents
-data_path = 'data/sample_incidents.json'
-incidents = load_incidents(data_path)
-incident_titles = [f"{i['title']} (Risk: {i['risk_level']})" for i in incidents]
+# --- Incident Free-Text Input ---
+st.markdown("#### Enter a cybersecurity incident description:")
+example_prompts = [
+    "A public S3 bucket with sensitive configs was found by our cloud scanner on June 10, 2025.",
+    "Multiple admin accounts were found using weak passwords and no MFA on June 12, 2025.",
+    "An unpatched Apache server (2.4.29) with critical CVEs was detected by a vulnerability scan.",
+    "A phishing email impersonating IT support was reported by several users last week."
+]
+st.markdown(
+    "<span style='color:gray'>e.g. " + "<br>e.g. ".join(example_prompts) + "</span>",
+    unsafe_allow_html=True
+)
+user_incident = st.text_area("Incident Description", height=100)
 
-# Simulate total risk for demo (sum of all risk_contribution_scores in sample)
-total_risk = sum(i.get('risk_contribution_score', 0) for i in incidents if 'risk_contribution_score' in i)
+if st.button("Analyze Incident with AI") and user_incident.strip():
+    with st.spinner("AI is analyzing the incident and generating all outputs..."):
+        result = llm_parse_incident_and_generate_all(user_incident)
+        st.session_state['llm_result'] = result
 
-# UI: Dropdown for incident selection
-idx = st.selectbox("Select Incident", range(len(incidents)), format_func=lambda i: incident_titles[i])
-incident = incidents[idx]
+llm_result = st.session_state.get('llm_result', None)
+if llm_result:
+    st.markdown("### ✅ Underwriting Checklist (AI-generated)")
+    for item in llm_result.get('checklist', []):
+        st.checkbox(item, value=False, disabled=True)
 
-# --- Underwriting Checklist ---
-st.markdown("### ✅ Underwriting Checklist (AI Pre-fill)")
-checklist_items = generate_underwriting_checklist(incident)
-if 'checklist_state' not in st.session_state or st.session_state.get('last_incident') != incident['id']:
-    st.session_state['checklist_state'] = [False] * len(checklist_items)
-    st.session_state['last_incident'] = incident['id']
-checklist_state = st.session_state['checklist_state']
-for i, item in enumerate(checklist_items):
-    checklist_state[i] = st.checkbox(item, value=checklist_state[i], key=f"check_{i}")
-st.session_state['checklist_state'] = checklist_state
+    st.markdown("### 🤝 Broker Questions (AI-generated)")
+    for q in llm_result.get('broker_questions', []):
+        st.radio(q, ['Yes', 'No'], index=0, disabled=True)
 
-# --- Broker Questions ---
-st.markdown("### 🤝 Broker Questions (AI-generated)")
-broker_questions = generate_broker_questions(incident)
-broker_answers = []
-for i, q in enumerate(broker_questions):
-    ans = st.text_input(q, key=f"broker_q_{i}")
-    broker_answers.append(ans)
+    st.markdown("### 🛡️ Risk Mitigation Suggestions (AI-generated)")
+    for s in llm_result.get('risk_mitigation', []):
+        st.write(f"- {s}")
 
-# --- Risk Mitigation Suggestions ---
-st.markdown("### 🛡️ Risk Mitigation Suggestions")
-for s in generate_risk_mitigation_suggestions(incident):
-    st.write(f"- {s}")
+    st.markdown("### 🛠️ Remediation Steps (AI-generated)")
+    st.success(llm_result.get('remediation', ''))
 
-# --- Remediation & Recommendation ---
-if st.button("Generate Remediation & Recommendation") or 'remediation_obj' not in st.session_state:
-    remediation_obj = generate_remediation(incident)
-    st.session_state['remediation_obj'] = remediation_obj
-remediation_obj = st.session_state.get('remediation_obj', {})
+    st.markdown("### 📝 Underwriter Recommendation (AI-generated)")
+    st.info(f"**Recommendation:** {llm_result.get('recommendation', '')}\n\n**Confidence:** {llm_result.get('confidence', 'N/A')}")
 
-st.markdown("### 🛠️ Remediation Steps")
-st.success(remediation_obj.get('remediation_steps', ''))
+    st.markdown("### 📋 Broker Summary (AI-generated)")
+    st.text_area("2-line Broker Note", llm_result.get('broker_summary', ''), height=68, disabled=True)
 
-with st.expander("Why was this suggested? (LLM Explainability)"):
-    st.write(remediation_obj.get('explanation', ''))
+    with st.expander("How was this recommendation derived?"):
+        st.write(llm_result.get('explanation', ''))
 
-# --- Underwriter Recommendation & Human Override ---
-st.markdown("### 📝 Underwriter Recommendation")
-rec = remediation_obj.get('recommended_action', '')
-conf = remediation_obj.get('confidence_score', 0.0)
-st.info(f"**AI Recommendation:** {rec}\n\n**Confidence:** {conf:.2f}")
-human_override = st.radio("Human Override (optional)", ["No override", "Accept risk", "Request fix", "Decline policy"], index=0)
-final_rec = rec if human_override == "No override" else human_override
-st.success(f"**Final Recommendation:** {final_rec}")
-
-# --- Before vs. After: AI vs. Manual Triage ---
-st.markdown("### ⏱️ Triage Time Comparison")
-st.metric("AI Triage Time", "2 min")
-st.metric("Manual Triage Time", "20 min")
-st.progress(0.1, text="Manual Triage Quality")
-st.progress(0.9, text="AI Triage Quality")
-
-# --- Net Risk After Remediation ---
-risk_before = incident.get('risk_contribution_score', 0)
-risk_after = 0 if final_rec.lower().startswith('accept') else int(risk_before * (1 - conf))
-net_risk = total_risk - (risk_before - risk_after)
-st.markdown("### 📉 Net Risk After Remediation")
-st.progress(max(1, net_risk) / 100, text=f"Net risk: {net_risk}/100 after remediation")
-
-# --- Broker Summary ---
-st.markdown("### 📋 Broker Summary")
-broker_summary = generate_broker_summary(remediation_obj.get('remediation_steps', ''), incident)
-st.text_area("2-line Broker Note", broker_summary, height=68)
-
-with st.expander("How was this recommendation derived?"):
-    st.write(
-        """
-        The recommendation is based on the incident's risk contribution, remediation cost, and the LLM's confidence in the suggested action. 
-        - If the LLM is highly confident and the action is 'Accept risk', risk is considered fully remediated.
-        - Otherwise, residual risk is calculated as: risk_after = risk_before × (1 - confidence).
-        - The net risk bar shows the updated risk for the underwriter.
-        - Human underwriters can override the AI recommendation for full transparency and control.
-        """
-    )
+st.markdown('<hr style="margin-top:2em;">', unsafe_allow_html=True)
+st.caption("This app is for the application of Senior Product Manager, Underwriting AI at Coalition Inc. Only for demo/job application use.")

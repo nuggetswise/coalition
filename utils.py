@@ -121,16 +121,44 @@ def generate_underwriting_checklist(incident):
 
 def generate_broker_questions(incident):
     """
-    Returns a list of GPT-generated questions for brokers.
+    Returns a list of incident-specific Yes/No questions for brokers.
     """
-    title = incident['title']
-    questions = [
-        f"Can you confirm if MFA is enabled for all users related to '{title}'?",
-        f"Are there any compensating controls in place for this risk?",
-        f"Has this incident type occurred before? If so, how was it remediated?",
-        f"Are there any business constraints preventing immediate remediation?"
-    ]
+    title = incident['title'].lower()
+    description = incident['description'].lower()
+    questions = []
+    if "mfa" in title or "mfa" in description or "multi-factor" in description:
+        questions.append("Is Multi-Factor Authentication (MFA) enabled for all relevant accounts?")
+    if "rdp" in title or "remote desktop" in description:
+        questions.append("Is RDP access restricted to VPN or internal networks only?")
+    if "patch" in title or "outdated" in description or "unpatched" in description:
+        questions.append("Are all systems fully patched and up to date?")
+    if "public" in title or "exposed" in description:
+        questions.append("Are any sensitive resources exposed to the public internet?")
+    if not questions:
+        questions = [
+            "Are there compensating controls in place for this risk?",
+            "Has this incident type occurred before? If so, was it remediated?"
+        ]
     return questions
+
+def adjust_risk_and_suggestions(incident, broker_answers):
+    """
+    Adjusts risk mitigation suggestions and remediation steps based on Yes/No broker answers.
+    Returns (suggestions, adjusted_remediation, risk_modifier)
+    """
+    suggestions = generate_risk_mitigation_suggestions(incident)
+    adjusted_remediation = None
+    risk_modifier = 1.0
+    # If any answer is 'No', increase risk and add more suggestions
+    if any(ans == 'No' for ans in broker_answers):
+        suggestions.append("Escalate to security team for urgent review.")
+        adjusted_remediation = "Immediate action required: address all 'No' responses before proceeding."
+        risk_modifier = 1.2  # Increase risk by 20%
+    elif all(ans == 'Yes' for ans in broker_answers) and broker_answers:
+        suggestions.append("No additional broker action required; all controls confirmed.")
+        adjusted_remediation = "Proceed with standard remediation as all controls are in place."
+        risk_modifier = 0.8  # Decrease risk by 20%
+    return suggestions, adjusted_remediation, risk_modifier
 
 def generate_risk_mitigation_suggestions(incident):
     """
@@ -144,3 +172,80 @@ def generate_risk_mitigation_suggestions(incident):
         f"Upgrade TLS to 1.3 where possible."
     ]
     return suggestions
+
+def generate_dynamic_risk_mitigation_suggestions(incident, broker_answers):
+    """
+    Uses LLM to generate context-aware risk mitigation suggestions based on incident and broker answers.
+    """
+    title = incident['title']
+    description = incident['description']
+    risk = incident.get('risk_level', '')
+    openai_key = os.getenv('OPENAI_API_KEY')
+    prompt = (
+        f"Incident: {title}\nDescription: {description}\nRisk: {risk}\n"
+        f"Broker Answers: {broker_answers}\n"
+        "Suggest 3-5 specific, actionable risk mitigation steps for this scenario."
+    )
+    if openai and openai_key:
+        openai.api_key = openai_key
+        resp = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=[{"role": "user", "content": prompt}]
+        )
+        text = resp.choices[0].message.content.strip()
+        suggestions = [line.strip('- ').strip() for line in text.split('\n') if line.strip()]
+        return suggestions
+    # fallback to static if no LLM
+    return generate_risk_mitigation_suggestions(incident)
+
+def llm_parse_incident_and_generate_all(incident_text):
+    """
+    Uses LLM to parse a free-text incident and generate:
+    - checklist (list of strings)
+    - broker_questions (list of strings)
+    - risk_mitigation (list of strings)
+    - remediation (string)
+    - recommendation (string)
+    - confidence (float or string)
+    - broker_summary (string)
+    - explanation (string)
+    """
+    openai_key = os.getenv('OPENAI_API_KEY')
+    prompt = (
+        f"Incident: {incident_text}\n"
+        "Parse the above incident and generate the following as JSON:\n"
+        "{\n"
+        "  'checklist': [list of underwriting checklist items],\n"
+        "  'broker_questions': [list of yes/no questions for brokers],\n"
+        "  'risk_mitigation': [list of risk mitigation suggestions],\n"
+        "  'remediation': 'remediation steps',\n"
+        "  'recommendation': 'underwriter recommendation',\n"
+        "  'confidence': confidence_score (0-1),\n"
+        "  'broker_summary': '2-line broker summary',\n"
+        "  'explanation': 'explain how the recommendation was derived'\n"
+        "}\n"
+        "Respond with only the JSON."
+    )
+    if openai and openai_key:
+        openai.api_key = openai_key
+        resp = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=[{"role": "user", "content": prompt}]
+        )
+        import json as pyjson
+        try:
+            data = pyjson.loads(resp.choices[0].message.content.strip().replace("'", '"'))
+        except Exception:
+            data = {}
+        return data
+    # fallback: static stub
+    return {
+        'checklist': ["Confirm asset inventory", "Verify patch status", "Check MFA enforcement"],
+        'broker_questions': ["Is MFA enabled?", "Are all systems patched?"],
+        'risk_mitigation': ["Upgrade all services", "Implement monitoring"],
+        'remediation': "Disable public access and enforce MFA.",
+        'recommendation': "Request fix",
+        'confidence': 0.8,
+        'broker_summary': "Incident triaged, remediation in progress.",
+        'explanation': "Recommendation is based on risk and missing controls."
+    }
