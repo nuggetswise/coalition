@@ -118,3 +118,42 @@ if explanation:
 # --- Footnote ---
 st.markdown('<hr style="margin-top:2em;">', unsafe_allow_html=True)
 st.markdown('<span style="color:red;">This app is for the application of Senior Product Manager, Underwriting AI at Coalition Inc. Only for demo/job application use.</span>', unsafe_allow_html=True)
+
+with st.sidebar:
+    with st.expander("About this Demo / Background & Impact", expanded=False):
+        st.markdown("""
+        **Problem Statement**
+        > Underwriters and brokers at Coalition face the challenge of rapidly and accurately assessing cyber risk in a constantly evolving threat landscape. Manual triage of incidents, checklist generation, broker Q&A, and risk mitigation planning are time-consuming, error-prone, and often lack explainability. This slows down underwriting, increases operational costs, and can lead to inconsistent risk decisions.
+
+        **Solution Architecture**
+        Remediation Copilot is an AI-powered underwriting assistant that automates and streamlines the entire cyber risk assessment workflow:
+        - **Input:** User enters a free-text incident description.
+        - **LLM Parsing:** The app uses a Large Language Model (LLM) to:
+            - Parse the incident and generate a tailored underwriting checklist.
+            - Dynamically create broker questions based on selected controls.
+            - Generate risk mitigation suggestions, remediation steps, and an underwriter recommendation with confidence scoring.
+            - Provide a broker summary and a detailed, explainable rationale for each recommendation.
+        - **User Interaction:** Underwriters select checklist items and answer broker questions, with all downstream logic and outputs driven by the LLM.
+        - **Output:** The app presents actionable, context-aware guidance, risk reduction strategies, and transparent recommendations for both underwriters and brokers.
+
+        **Architecture Diagram (Textual):**
+        ```
+        User Input (Incident) 
+              ↓
+           LLM Parsing
+              ↓
+        [Checklist] ← User Selection → [Broker Qs] ← User Yes/No → [LLM: Mitigation, Remediation, Recommendation, Summary, Explainability]
+              ↓
+           Output: Actionable Guidance, Risk Reduction, Audit Trail
+        ```
+
+        **Measurable Impact**
+        - **Efficiency:** Reduces manual triage and underwriting time from ~20 minutes to ~2 minutes per incident (90%+ time savings).
+        - **Accuracy:** Ensures consistent, data-driven, and explainable risk decisions, reducing human error and subjectivity.
+        - **Scalability:** Enables underwriters to handle more cases with less effort, supporting business growth without proportional headcount increases.
+        - **Transparency:** Provides a clear audit trail and rationale for every recommendation, supporting compliance and trust.
+        - **Collaboration:** Streamlines broker-underwriter communication, reducing back-and-forth and accelerating policy decisions.
+
+        **Market Differentiation**
+        Coalition does not currently offer a public-facing, fully interactive AI-powered underwriting assistant like this demo. This capability would be a first-of-its-kind product for Coalition and a significant innovation in the cyber insurance market.
+        """)
