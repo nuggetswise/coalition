@@ -22,6 +22,10 @@ try:
     import cohere
 except ImportError:
     cohere = None
+try:
+    import groq
+except ImportError:
+    groq = None
 
 def generate_remediation(incident):
     """
@@ -34,6 +38,7 @@ def generate_remediation(incident):
     openai_key = os.getenv('OPENAI_API_KEY')
     gemini_key = os.getenv('GEMINI_API_KEY')
     cohere_key = os.getenv('COHERE_API_KEY')
+    groq_key = os.getenv('GROQ_API_KEY')
     prompt = (
         f"Incident: {title}\nDescription: {description}\nRisk: {risk}\n"
         "Provide:\n"
@@ -50,6 +55,13 @@ def generate_remediation(incident):
             messages=[{"role": "user", "content": prompt}]
         )
         text = resp.choices[0].message.content.strip()
+    elif groq and groq_key:
+        groq_client = groq.Groq(api_key=groq_key)
+        resp = groq_client.chat.completions.create(
+            model="mixtral-8x7b-32768",
+            messages=[{"role": "user", "content": prompt}]
+        )
+        text = resp.choices[0].message.content.strip()
     elif genai and gemini_key:
         genai.configure(api_key=gemini_key)
         model = genai.GenerativeModel('gemini-pro')
@@ -60,7 +72,7 @@ def generate_remediation(incident):
         resp = co.generate(model="command", prompt=prompt, max_tokens=300)
         text = resp.generations[0].text.strip()
     else:
-        raise RuntimeError("No valid API key found for OpenAI, Gemini, or Cohere.")
+        raise RuntimeError("No valid API key found for OpenAI, Gemini, Cohere, or Groq.")
     # Parse response
     remediation, why, rec_action, conf = '', '', '', 0.0
     for line in text.split('\n'):
